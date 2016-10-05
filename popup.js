@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var tabStacheId = '0';
 
@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function unload_stache() {
-    let _this = this;
     chrome.bookmarks.getChildren(this.value, (children)=>{
        children.forEach((bookmark)=>{
          chrome.tabs.create({url: bookmark.url});
