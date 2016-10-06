@@ -59,22 +59,31 @@
     
       function load_stache(node) {
         chrome.tabs.getAllInWindow(null, (tabs)=>{
+          // some tabs should be ignored
+          // 1. ignore dublicate tabs
           chrome.tabs.create({});
-          let urls = tabs.map(tab => tab.url);
-          for (let i in tabs) {
-          	// some tabs should be ignored
-          	// 1. ignore dublicate tabs
-          	if(urls.indexOf(tabs[i].url) < i)
-          		continue;
-          	// 2. ignore some specified types of tabs
-          	if(tabs[i].url.startsWith("chrome-extension://") || tabs[i].url.startsWith("chrome://") || tabs[i].url.startsWith("about:blank"))
-        		continue;
-            chrome.bookmarks.create({
-              'parentId': node.id,
-              'title': tabs[i].title,
-              'url': tabs[i].url});
-            chrome.tabs.remove(tabs[i].id);
-          }
+          let urls = [...new Set(tabs.map(tab => tab.url))];
+          tabs = tabs.filter((tab) =>{
+              let index = urls.indexOf(tab.url);
+              if(index != -1){
+                  urls.splice(index, 1);
+                  return true;
+              }
+              return false; 
+          });
+          // 2. ignore some specified types of tabs
+          tabs = tabs.filter((tab)=>{
+              return !(tab.url.startsWith("chrome-extension://") ||
+                      tab.url.startsWith("chrome://") ||
+                      tab.url.startsWith("about:blank") )        
+          });
+          tabs.forEach((tab)=>{
+              chrome.bookmarks.create({
+                  'parentId': node.id,
+                  'title': tab.title,
+                  'url': tab.url});
+              chrome.tabs.remove(tab.id);
+          })                
         });
       }
     
